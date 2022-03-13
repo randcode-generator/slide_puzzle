@@ -4,7 +4,10 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:very_good_slide_puzzle/models/models.dart';
+import 'package:flutter/material.dart';
+import 'package:very_good_slide_puzzle/models/position.dart';
+import 'package:very_good_slide_puzzle/models/tile.dart';
+import 'package:very_good_slide_puzzle/puzzle/puzzle.dart';
 
 part 'puzzle_event.dart';
 part 'puzzle_state.dart';
@@ -13,6 +16,7 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
   PuzzleBloc(this._size, {this.random}) : super(const PuzzleState()) {
     on<PuzzleInitialized>(_onPuzzleInitialized);
     on<TileTapped>(_onTileTapped);
+    on<HintTapped>(_onHintTapped);
     on<PuzzleReset>(_onPuzzleReset);
   }
 
@@ -20,10 +24,8 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
 
   final Random? random;
 
-  void _onPuzzleInitialized(
-    PuzzleInitialized event,
-    Emitter<PuzzleState> emit,
-  ) {
+  void _onPuzzleInitialized(PuzzleInitialized event,
+      Emitter<PuzzleState> emit,) {
     final puzzle = _generatePuzzle(_size, shuffle: event.shufflePuzzle);
     emit(
       PuzzleState(
@@ -46,7 +48,6 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
               puzzleStatus: PuzzleStatus.complete,
               tileMovementStatus: TileMovementStatus.moved,
               numberOfCorrectTiles: puzzle.getNumberOfCorrectTiles(),
-              numberOfMoves: state.numberOfMoves + 1,
               lastTappedTile: tappedTile,
             ),
           );
@@ -56,7 +57,6 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
               puzzle: puzzle.sort(),
               tileMovementStatus: TileMovementStatus.moved,
               numberOfCorrectTiles: puzzle.getNumberOfCorrectTiles(),
-              numberOfMoves: state.numberOfMoves + 1,
               lastTappedTile: tappedTile,
             ),
           );
@@ -71,6 +71,13 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
         state.copyWith(tileMovementStatus: TileMovementStatus.cannotBeMoved),
       );
     }
+  }
+  void _onHintTapped(HintTapped event, Emitter<PuzzleState> emit) {
+    emit(
+      state.copyWith(
+        isHintVisible: event.isHintVisible
+      ),
+    );
   }
 
   void _onPuzzleReset(PuzzleReset event, Emitter<PuzzleState> emit) {
@@ -135,26 +142,29 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
 
   /// Build a list of tiles - giving each tile their correct position and a
   /// current position.
-  List<Tile> _getTileListFromPositions(
-    int size,
-    List<Position> correctPositions,
-    List<Position> currentPositions,
-  ) {
+  List<Tile> _getTileListFromPositions(int size,
+      List<Position> correctPositions,
+      List<Position> currentPositions,) {
     final whitespacePosition = Position(x: size, y: size);
     return [
       for (int i = 1; i <= size * size; i++)
         if (i == size * size)
           Tile(
-            value: i,
-            correctPosition: whitespacePosition,
-            currentPosition: currentPositions[i - 1],
-            isWhitespace: true,
+              value: i,
+              correctPosition: whitespacePosition,
+              currentPosition: currentPositions[i - 1],
+              isWhitespace: true,
+              tileColor: Colors.white
           )
         else
           Tile(
-            value: i,
-            correctPosition: correctPositions[i - 1],
-            currentPosition: currentPositions[i - 1],
+              value: i,
+              correctPosition: correctPositions[i - 1],
+              currentPosition: currentPositions[i - 1],
+              tileColor: HSVColor.fromAHSV(1,
+                  (correctPositions[i - 1].y - 1) * 80,
+                  (1.0/size) * correctPositions[i - 1].x,
+                  1.0).toColor()
           )
     ];
   }

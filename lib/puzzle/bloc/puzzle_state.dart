@@ -12,8 +12,7 @@ class PuzzleState extends Equatable {
     this.puzzleStatus = PuzzleStatus.incomplete,
     this.tileMovementStatus = TileMovementStatus.nothingTapped,
     this.numberOfCorrectTiles = 0,
-    this.numberOfMoves = 0,
-    this.lastTappedTile,
+    this.isHintVisible = true
   });
 
   /// [Puzzle] containing the current tile arrangement.
@@ -25,24 +24,14 @@ class PuzzleState extends Equatable {
   /// Status indicating if a [Tile] was moved or why a [Tile] was not moved.
   final TileMovementStatus tileMovementStatus;
 
-  /// Represents the last tapped tile of the puzzle.
-  ///
-  /// The value is `null` if the user has not interacted with
-  /// the puzzle yet.
-  final Tile? lastTappedTile;
-
   /// Number of tiles currently in their correct position.
   final int numberOfCorrectTiles;
 
   /// Number of tiles currently not in their correct position.
   int get numberOfTilesLeft => puzzle.tiles.length - numberOfCorrectTiles - 1;
 
-  /// Number representing how many moves have been made on the current puzzle.
-  ///
-  /// The number of moves is not always the same as the total number of tiles
-  /// moved. If a row/column of 2+ tiles are moved from one tap, one move is
-  /// added.
-  final int numberOfMoves;
+  /// Is hint visible
+  final bool isHintVisible;
 
   PuzzleState copyWith({
     Puzzle? puzzle,
@@ -51,14 +40,14 @@ class PuzzleState extends Equatable {
     int? numberOfCorrectTiles,
     int? numberOfMoves,
     Tile? lastTappedTile,
+    bool? isHintVisible
   }) {
     return PuzzleState(
       puzzle: puzzle ?? this.puzzle,
       puzzleStatus: puzzleStatus ?? this.puzzleStatus,
       tileMovementStatus: tileMovementStatus ?? this.tileMovementStatus,
       numberOfCorrectTiles: numberOfCorrectTiles ?? this.numberOfCorrectTiles,
-      numberOfMoves: numberOfMoves ?? this.numberOfMoves,
-      lastTappedTile: lastTappedTile ?? this.lastTappedTile,
+      isHintVisible: isHintVisible ?? this.isHintVisible
     );
   }
 
@@ -68,7 +57,6 @@ class PuzzleState extends Equatable {
         puzzleStatus,
         tileMovementStatus,
         numberOfCorrectTiles,
-        numberOfMoves,
-        lastTappedTile,
+        isHintVisible
       ];
 }

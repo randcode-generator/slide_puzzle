@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:very_good_slide_puzzle/colors/colors.dart';
-import 'package:very_good_slide_puzzle/l10n/l10n.dart';
-import 'package:very_good_slide_puzzle/layout/layout.dart';
-import 'package:very_good_slide_puzzle/models/models.dart';
-import 'package:very_good_slide_puzzle/puzzle/puzzle.dart';
-import 'package:very_good_slide_puzzle/simple/simple.dart';
-import 'package:very_good_slide_puzzle/theme/theme.dart';
-import 'package:very_good_slide_puzzle/typography/typography.dart';
+import 'package:very_good_slide_puzzle/layout/puzzle_layout_delegate.dart';
+import 'package:very_good_slide_puzzle/layout/responsive_gap.dart';
+import 'package:very_good_slide_puzzle/layout/responsive_layout_builder.dart';
+import 'package:very_good_slide_puzzle/models/tile.dart';
+import 'package:very_good_slide_puzzle/puzzle/bloc/puzzle_bloc.dart';
+import 'package:very_good_slide_puzzle/puzzle/view/puzzle_page.dart';
+import 'package:very_good_slide_puzzle/simple/simple_theme.dart';
+import 'package:very_good_slide_puzzle/typography/text_styles.dart';
 
 /// {@template simple_puzzle_layout_delegate}
 /// A delegate for computing the layout of the puzzle UI
@@ -18,74 +19,71 @@ class SimplePuzzleLayoutDelegate extends PuzzleLayoutDelegate {
   /// {@macro simple_puzzle_layout_delegate}
   const SimplePuzzleLayoutDelegate();
 
-  @override
-  Widget startSectionBuilder(PuzzleState state) {
-    return ResponsiveLayoutBuilder(
-      small: (_, child) => child!,
-      medium: (_, child) => child!,
-      large: (_, child) => Padding(
-        padding: const EdgeInsets.only(left: 50, right: 32),
-        child: child,
-      ),
-      child: (_) => SimpleStartSection(state: state),
+  Widget instructions() {
+    return RichText(
+        text: TextSpan(
+            style: TextStyle(color: Colors.black),
+            children: [
+              TextSpan(text: "Press the "),
+              TextSpan(text: "shuffle ",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(text: "button to start/restart game"),
+            ]
+        )
+    );
+  }
+
+  Widget header(Widget? child) {
+    return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: child,
+          ),
+          instructions(),
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: child,
+          ),
+          PuzzleMenuItem(),
+        ]
     );
   }
 
   @override
-  Widget endSectionBuilder(PuzzleState state) {
+  Widget endSectionBuilder() {
     return Column(
       children: [
         const ResponsiveGap(
-          small: 32,
-          medium: 48,
+          small: 10,
+          medium: 10,
+          large: 10,
         ),
         ResponsiveLayoutBuilder(
           small: (_, child) => const SimplePuzzleShuffleButton(),
           medium: (_, child) => const SimplePuzzleShuffleButton(),
           large: (_, __) => const SizedBox(),
-        ),
-        const ResponsiveGap(
-          small: 32,
-          medium: 48,
-        ),
+        )
       ],
     );
   }
 
   @override
-  Widget backgroundBuilder(PuzzleState state) {
-    return Positioned(
-      right: 0,
-      bottom: 0,
-      child: ResponsiveLayoutBuilder(
-        small: (_, __) => SizedBox(
-          width: 184,
-          height: 118,
-          child: Image.asset(
-            'assets/images/simple_dash_small.png',
-            key: const Key('simple_puzzle_dash_small'),
-          ),
-        ),
-        medium: (_, __) => SizedBox(
-          width: 380.44,
-          height: 214,
-          child: Image.asset(
-            'assets/images/simple_dash_medium.png',
-            key: const Key('simple_puzzle_dash_medium'),
-          ),
-        ),
-        large: (_, __) => Padding(
-          padding: const EdgeInsets.only(bottom: 53),
-          child: SizedBox(
-            width: 568.99,
-            height: 320,
-            child: Image.asset(
-              'assets/images/simple_dash_large.png',
-              key: const Key('simple_puzzle_dash_large'),
-            ),
-          ),
-        ),
-      ),
+  Widget startSectionBuilder() {
+    return ResponsiveLayoutBuilder(
+        small: (_, child) => header(child),
+        medium: (_, child) => header(child),
+        large: (_, child) =>
+            Column(
+                children: [
+                  Gap(200),
+                  instructions(),
+                  Gap(5),
+                  PuzzleMenuItem(),
+                  Gap(20),
+                  SimplePuzzleShuffleButton()
+                ]
+            )
     );
   }
 
@@ -94,8 +92,8 @@ class SimplePuzzleLayoutDelegate extends PuzzleLayoutDelegate {
     return Column(
       children: [
         const ResponsiveGap(
-          small: 32,
-          medium: 48,
+          small: 10,
+          medium: 10,
           large: 96,
         ),
         ResponsiveLayoutBuilder(
@@ -163,89 +161,6 @@ class SimplePuzzleLayoutDelegate extends PuzzleLayoutDelegate {
 
   @override
   List<Object?> get props => [];
-}
-
-/// {@template simple_start_section}
-/// Displays the start section of the puzzle based on [state].
-/// {@endtemplate}
-@visibleForTesting
-class SimpleStartSection extends StatelessWidget {
-  /// {@macro simple_start_section}
-  const SimpleStartSection({
-    Key? key,
-    required this.state,
-  }) : super(key: key);
-
-  /// The state of the puzzle.
-  final PuzzleState state;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const ResponsiveGap(
-          small: 20,
-          medium: 83,
-          large: 151,
-        ),
-        PuzzleName(
-          key: puzzleNameKey,
-        ),
-        const ResponsiveGap(large: 16),
-        SimplePuzzleTitle(
-          status: state.puzzleStatus,
-        ),
-        const ResponsiveGap(
-          small: 12,
-          medium: 16,
-          large: 32,
-        ),
-        NumberOfMovesAndTilesLeft(
-          key: numberOfMovesAndTilesLeftKey,
-          numberOfMoves: state.numberOfMoves,
-          numberOfTilesLeft: state.numberOfTilesLeft,
-        ),
-        const ResponsiveGap(
-          large: 32,
-          small: 16,
-        ),
-        ResponsiveLayoutBuilder(
-          small: (_, __) => const SizedBox(),
-          medium: (_, __) => const SizedBox(),
-          large: (_, __) => const SimplePuzzleShuffleButton(),
-        ),
-      ],
-    );
-  }
-}
-
-/// {@template simple_puzzle_title}
-/// Displays the title of the puzzle based on [status].
-///
-/// Shows the success state when the puzzle is completed,
-/// otherwise defaults to the Puzzle Challenge title.
-/// {@endtemplate}
-@visibleForTesting
-class SimplePuzzleTitle extends StatelessWidget {
-  /// {@macro simple_puzzle_title}
-  const SimplePuzzleTitle({
-    Key? key,
-    required this.status,
-  }) : super(key: key);
-
-  /// The status of the puzzle.
-  final PuzzleStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    return PuzzleTitle(
-      key: puzzleTitleKey,
-      title: status == PuzzleStatus.complete
-          ? context.l10n.puzzleCompleted
-          : context.l10n.puzzleChallengeTitle,
-    );
-  }
 }
 
 abstract class _BoardSize {
@@ -322,74 +237,65 @@ class SimplePuzzleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.select((ThemeBloc bloc) => bloc.state.theme);
+    const theme = SimpleTheme();
 
     return TextButton(
-      style: TextButton.styleFrom(
-        primary: PuzzleColors.white,
-        textStyle: PuzzleTextStyle.headline2.copyWith(
-          fontSize: tileFontSize,
-        ),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(12),
+        style: TextButton.styleFrom(
+          primary: PuzzleColors.white,
+          textStyle: PuzzleTextStyle.headline2.copyWith(
+            fontSize: tileFontSize,
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(12),
+            ),
+          ),
+        ).copyWith(
+          foregroundColor: MaterialStateProperty.all(PuzzleColors.white),
+          backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                (states) {
+              if (states.contains(MaterialState.hovered)) {
+                return theme.hoverColor;
+              } else {
+                return tile.tileColor;
+              }
+            },
           ),
         ),
-      ).copyWith(
-        foregroundColor: MaterialStateProperty.all(PuzzleColors.white),
-        backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-          (states) {
-            if (tile.value == state.lastTappedTile?.value) {
-              return theme.pressedColor;
-            } else if (states.contains(MaterialState.hovered)) {
-              return theme.hoverColor;
-            } else {
-              return theme.defaultColor;
-            }
-          },
-        ),
-      ),
-      onPressed: state.puzzleStatus == PuzzleStatus.incomplete
-          ? () => context.read<PuzzleBloc>().add(TileTapped(tile))
-          : null,
-      child: Text(
-        tile.value.toString(),
-        semanticsLabel: context.l10n.puzzleTileLabelText(
-          tile.value.toString(),
-          tile.currentPosition.x.toString(),
-          tile.currentPosition.y.toString(),
-        ),
-      ),
+        onPressed: state.puzzleStatus == PuzzleStatus.incomplete
+            ? () => context.read<PuzzleBloc>().add(TileTapped(tile))
+            : null,
+        child:
+        AnimatedOpacity(
+          opacity: state.isHintVisible ? 1 : 0,
+          curve: Curves.easeInOut,
+          duration: Duration(milliseconds: 500),
+          child: Text(
+            tile.value.toString(),
+            style: TextStyle(color: Colors.black38),
+          ),
+        )
     );
   }
 }
 
-/// {@template puzzle_shuffle_button}
-/// Displays the button to shuffle the puzzle.
-/// {@endtemplate}
-@visibleForTesting
 class SimplePuzzleShuffleButton extends StatelessWidget {
   /// {@macro puzzle_shuffle_button}
   const SimplePuzzleShuffleButton({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return PuzzleButton(
-      textColor: PuzzleColors.primary0,
-      backgroundColor: PuzzleColors.primary6,
-      onPressed: () => context.read<PuzzleBloc>().add(const PuzzleReset()),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/images/shuffle_icon.png',
-            width: 17,
-            height: 17,
-          ),
-          const Gap(10),
-          Text(context.l10n.puzzleShuffle),
-        ],
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          primary: PuzzleColors.blue50,
+          padding: EdgeInsets.fromLTRB(40, 20, 40, 20),
+          textStyle: const TextStyle(fontSize: 26),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24.0)
+          )
       ),
+      onPressed: () => context.read<PuzzleBloc>().add(const PuzzleReset()),
+      child: Text("shuffle")
     );
   }
 }
