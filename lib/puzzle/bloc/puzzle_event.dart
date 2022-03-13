@@ -39,3 +39,12 @@ class HintTapped extends PuzzleEvent {
 class PuzzleReset extends PuzzleEvent {
   const PuzzleReset();
 }
+
+class TileVisibility extends PuzzleEvent {
+  const TileVisibility(this.isTileVisible);
+
+  final bool isTileVisible;
+
+  @override
+  List<Object> get props => [isTileVisible];
+}

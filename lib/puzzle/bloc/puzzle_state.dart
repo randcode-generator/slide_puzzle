@@ -12,7 +12,8 @@ class PuzzleState extends Equatable {
     this.puzzleStatus = PuzzleStatus.incomplete,
     this.tileMovementStatus = TileMovementStatus.nothingTapped,
     this.numberOfCorrectTiles = 0,
-    this.isHintVisible = true
+    this.isHintVisible = true,
+    this.isTileVisible = true
   });
 
   /// [Puzzle] containing the current tile arrangement.
@@ -33,6 +34,9 @@ class PuzzleState extends Equatable {
   /// Is hint visible
   final bool isHintVisible;
 
+  /// Is tile visible
+  final bool isTileVisible;
+
   PuzzleState copyWith({
     Puzzle? puzzle,
     PuzzleStatus? puzzleStatus,
@@ -40,14 +44,16 @@ class PuzzleState extends Equatable {
     int? numberOfCorrectTiles,
     int? numberOfMoves,
     Tile? lastTappedTile,
-    bool? isHintVisible
+    bool? isHintVisible,
+    bool? isTileVisible
   }) {
     return PuzzleState(
-      puzzle: puzzle ?? this.puzzle,
-      puzzleStatus: puzzleStatus ?? this.puzzleStatus,
-      tileMovementStatus: tileMovementStatus ?? this.tileMovementStatus,
-      numberOfCorrectTiles: numberOfCorrectTiles ?? this.numberOfCorrectTiles,
-      isHintVisible: isHintVisible ?? this.isHintVisible
+        puzzle: puzzle ?? this.puzzle,
+        puzzleStatus: puzzleStatus ?? this.puzzleStatus,
+        tileMovementStatus: tileMovementStatus ?? this.tileMovementStatus,
+        numberOfCorrectTiles: numberOfCorrectTiles ?? this.numberOfCorrectTiles,
+        isHintVisible: isHintVisible ?? this.isHintVisible,
+        isTileVisible: isTileVisible ?? this.isTileVisible
     );
   }
 
@@ -57,6 +63,7 @@ class PuzzleState extends Equatable {
         puzzleStatus,
         tileMovementStatus,
         numberOfCorrectTiles,
-        isHintVisible
+        isHintVisible,
+        isTileVisible
       ];
 }

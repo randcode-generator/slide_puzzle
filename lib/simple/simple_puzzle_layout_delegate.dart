@@ -239,41 +239,46 @@ class SimplePuzzleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     const theme = SimpleTheme();
 
-    return TextButton(
-        style: TextButton.styleFrom(
-          primary: PuzzleColors.white,
-          textStyle: PuzzleTextStyle.headline2.copyWith(
-            fontSize: tileFontSize,
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(12),
+    return AnimatedOpacity(
+        opacity: state.isTileVisible ? 1 : 0,
+        curve: Curves.easeInOut,
+        duration: Duration(milliseconds: 500),
+        child: TextButton(
+            style: TextButton.styleFrom(
+              primary: PuzzleColors.white,
+              textStyle: PuzzleTextStyle.headline2.copyWith(
+                fontSize: tileFontSize,
+              ),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(12),
+                ),
+              ),
+            ).copyWith(
+              foregroundColor: MaterialStateProperty.all(PuzzleColors.white),
+              backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                    (states) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return theme.hoverColor;
+                  } else {
+                    return tile.tileColor;
+                  }
+                },
+              ),
             ),
-          ),
-        ).copyWith(
-          foregroundColor: MaterialStateProperty.all(PuzzleColors.white),
-          backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                (states) {
-              if (states.contains(MaterialState.hovered)) {
-                return theme.hoverColor;
-              } else {
-                return tile.tileColor;
-              }
-            },
-          ),
-        ),
-        onPressed: state.puzzleStatus == PuzzleStatus.incomplete
-            ? () => context.read<PuzzleBloc>().add(TileTapped(tile))
-            : null,
-        child:
-        AnimatedOpacity(
-          opacity: state.isHintVisible ? 1 : 0,
-          curve: Curves.easeInOut,
-          duration: Duration(milliseconds: 500),
-          child: Text(
-            tile.value.toString(),
-            style: TextStyle(color: Colors.black38),
-          ),
+            onPressed: state.puzzleStatus == PuzzleStatus.incomplete
+                ? () => context.read<PuzzleBloc>().add(TileTapped(tile))
+                : null,
+            child:
+            AnimatedOpacity(
+              opacity: state.isHintVisible ? 1 : 0,
+              curve: Curves.easeInOut,
+              duration: Duration(milliseconds: 500),
+              child: Text(
+                tile.value.toString(),
+                style: TextStyle(color: Colors.black38),
+              ),
+            )
         )
     );
   }
@@ -294,7 +299,14 @@ class SimplePuzzleShuffleButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(24.0)
           )
       ),
-      onPressed: () => context.read<PuzzleBloc>().add(const PuzzleReset()),
+      onPressed: () =>
+      {
+        context.read<PuzzleBloc>().add(TileVisibility(false)),
+        Future.delayed(Duration(milliseconds: 500), () =>
+        {
+          context.read<PuzzleBloc>().add(const PuzzleReset())
+        })
+      },
       child: Text("shuffle")
     );
   }

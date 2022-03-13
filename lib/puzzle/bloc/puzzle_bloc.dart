@@ -18,6 +18,7 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
     on<TileTapped>(_onTileTapped);
     on<HintTapped>(_onHintTapped);
     on<PuzzleReset>(_onPuzzleReset);
+    on<TileVisibility>(_onTileVisible);
   }
 
   final int _size;
@@ -86,6 +87,14 @@ class PuzzleBloc extends Bloc<PuzzleEvent, PuzzleState> {
       PuzzleState(
         puzzle: puzzle.sort(),
         numberOfCorrectTiles: puzzle.getNumberOfCorrectTiles(),
+      ),
+    );
+  }
+
+  void _onTileVisible(TileVisibility event, Emitter<PuzzleState> emit) {
+    emit(
+      state.copyWith(
+          isTileVisible: event.isTileVisible
       ),
     );
   }
