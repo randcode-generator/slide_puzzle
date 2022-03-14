@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:very_good_slide_puzzle/layout/responsive_layout_builder.dart';
 import 'package:very_good_slide_puzzle/models/tile.dart';
 import 'package:very_good_slide_puzzle/puzzle/bloc/puzzle_bloc.dart';
+import 'package:very_good_slide_puzzle/puzzle/widgets/puzzle_keyboard_handler.dart';
 import 'package:very_good_slide_puzzle/simple/simple_theme.dart';
 import 'package:very_good_slide_puzzle/colors/colors.dart';
 
@@ -185,16 +186,18 @@ class PuzzleBoard extends StatelessWidget {
     final size = puzzle.getDimension();
     if (size == 0) return const CircularProgressIndicator();
 
-    return theme.layoutDelegate.boardBuilder(
-      size,
-      puzzle.tiles
-          .map(
-            (tile) =>
-            _PuzzleTile(
-              key: Key('puzzle_tile_${tile.value.toString()}'),
-              tile: tile,
-            ),
-      ).toList(),
+    return PuzzleKeyboardHandler(
+        child: theme.layoutDelegate.boardBuilder(
+          size,
+          puzzle.tiles
+              .map(
+                (tile) =>
+                _PuzzleTile(
+                  key: Key('puzzle_tile_${tile.value.toString()}'),
+                  tile: tile,
+                ),
+          ).toList(),
+        )
     );
   }
 }
